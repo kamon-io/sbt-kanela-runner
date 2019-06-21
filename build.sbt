@@ -33,6 +33,7 @@ lazy val kanelaRunner = Project("kanela-runner", file("sbt-kanela-runner"))
   .settings(
     sbtPlugin := true,
     moduleName := "sbt-kanela-runner",
+    bintrayPackage := "sbt-kanela-runner",
     libraryDependencies += "net.bytebuddy" % "byte-buddy-agent" % "1.9.12"
   )
 
@@ -42,6 +43,7 @@ lazy val kanelaRunnerPlay26 = Project("kanela-runner-play-26", file("sbt-aspectj
     sbtPlugin := true,
     name := "sbt-kanela-runner-play-2.6",
     moduleName := "sbt-kanela-runner-play-2.6",
+    bintrayPackage := "sbt-kanela-runner",
     libraryDependencies ++= Seq(
       crossSbtDependency(playSbtPluginFor26, (sbtBinaryVersion in pluginCrossBuild).value, scalaBinaryVersion.value)
     )
@@ -53,6 +55,7 @@ lazy val kanelaRunnerPlay27 = Project("kanela-runner-play-27", file("sbt-aspectj
     sbtPlugin := true,
     name := "sbt-kanela-runner-play-2.7",
     moduleName := "sbt-kanela-runner-play-2.7",
+    bintrayPackage := "sbt-kanela-runner",
     libraryDependencies ++= Seq(
       crossSbtDependency(playSbtPluginFor27, (sbtBinaryVersion in pluginCrossBuild).value, scalaBinaryVersion.value)
     )
