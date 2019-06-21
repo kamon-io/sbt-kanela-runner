@@ -26,7 +26,7 @@ Add the `sbt-kanela-runner` plugin to your `project/plugins.sbt` file using the 
 
 ```scala
 resolvers += Resolver.bintrayRepo("kamon-io", "sbt-plugins")
-addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.0.0")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.0.0-RC1")
 ```
 
 ### Running
@@ -48,11 +48,11 @@ For Play Framework 2.6 and 2.7 projects add the `sbt-kanela-runner-play-2.x` to 
 ```scala
 // For Play Framework 2.6
 resolvers += Resolver.bintrayIvyRepo("kamon-io", "sbt-plugins")
-addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.6" % "2.0.0")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.6" % "2.0.0-RC1")
 
 // For Play Framework 2.7
 resolvers += Resolver.bintrayIvyRepo("kamon-io", "sbt-plugins")
-addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.7" % "2.0.0")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.7" % "2.0.0-RC1")
 ```
 
 Then, you will need to enable the `JavaAgent` plugin on your Play project. Find your play project on your `build.sbt`
