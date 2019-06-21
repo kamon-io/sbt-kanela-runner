@@ -1,7 +1,5 @@
 package kamon.instrumentation.sbt
 
-import java.net.URLClassLoader
-
 import sbt._
 import sbt.internal.inc.classpath._
 
@@ -19,7 +17,7 @@ object SbtCross {
   private def javaLibraryPaths: Seq[File] = IO.parseClasspath(System.getProperty("java.library.path"))
 
   def toLoader(paths: Seq[File], resourceMap: Map[String, String], nativeTemp: File): ClassLoader =
-    new URLClassLoader(Path.toURLs(paths), null) with RawResources with NativeCopyLoader {
+    new KanelaOnSystemClassLoader(Path.toURLs(paths), null) with RawResources with NativeCopyLoader {
       override def resources = resourceMap
       override val config = new NativeCopyConfig(nativeTemp, paths, javaLibraryPaths)
       override def toString =

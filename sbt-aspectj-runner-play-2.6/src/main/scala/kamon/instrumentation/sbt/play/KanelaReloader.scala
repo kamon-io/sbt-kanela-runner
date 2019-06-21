@@ -10,7 +10,8 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.{Timer, TimerTask}
 
 import better.files.{File => _, _}
-import SbtAspectJRunnerPlay.NamedWeavingURLClassLoader
+import SbtKanelaRunnerPlay.NamedKanelaAwareClassLoader
+import kamon.instrumentation.sbt.SbtKanelaRunner
 import play.core.{Build, BuildLink}
 import play.dev.filewatch.FileWatchService
 import play.runsupport.{NamedURLClassLoader, ServerStartException}
@@ -20,7 +21,7 @@ import play.runsupport.Reloader.{CompileFailure, CompileResult, CompileSuccess, 
 
 import scala.collection.JavaConverters._
 
-object AspectJReloader {
+object KanelaReloader {
 
   type ClassLoaderCreator = (String, Array[URL], ClassLoader) => ClassLoader
 
@@ -38,7 +39,7 @@ object AspectJReloader {
     AccessController.doPrivileged(new PrivilegedAction[T]() {
       def run: T = {
         try {
-          thread.setContextClassLoader(classOf[AspectJReloader].getClassLoader)
+          thread.setContextClassLoader(classOf[KanelaReloader].getClassLoader)
           f
         } finally {
           thread.setContextClassLoader(oldLoader)
@@ -123,9 +124,6 @@ object AspectJReloader {
 
     /** Reloads the application.*/
     def reload(): Unit
-
-    /** URL at which the application is running (if started) */
-    def url(): String
   }
 
   /**
@@ -141,7 +139,8 @@ object AspectJReloader {
     generatedSourceHandlers: Map[String, GeneratedSourceMapping],
     defaultHttpPort: Int, defaultHttpAddress: String, projectPath: File,
     devSettings: Seq[(String, String)], args: Seq[String],
-    mainClassName: String, reloadLock: AnyRef
+    mainClassName: String, reloadLock: AnyRef,
+    kanelaAgentJar: File
   ): DevServer = {
 
     val (properties, httpPort, httpsPort, httpAddress) = filterArgs(args, defaultHttpPort, defaultHttpAddress, devSettings)
@@ -205,14 +204,14 @@ object AspectJReloader {
       def get: URLClassLoader = { reloader.getClassLoader.orNull }
     })
 
-    lazy val applicationLoader = new NamedWeavingURLClassLoader("DependencyClassLoader", urls(dependencyClasspath), delegatingLoader)
+    lazy val applicationLoader = new NamedKanelaAwareClassLoader("DependencyClassLoader", urls(dependencyClasspath), delegatingLoader)
     lazy val assetsLoader = assetsClassLoader(applicationLoader)
-
-    lazy val reloader = new AspectJReloader(reloadCompile, assetsLoader, projectPath, devSettings, monitoredFiles, fileWatchService, generatedSourceHandlers, reloadLock)
+    lazy val reloader = new KanelaReloader(reloadCompile, assetsLoader, projectPath, devSettings, monitoredFiles, fileWatchService, generatedSourceHandlers, reloadLock, kanelaAgentJar)
 
     try {
       // Now we're about to start, let's call the hooks:
       runHooks.run(_.beforeStarted())
+      SbtKanelaRunner.attachWithInstrumentationClassLoader(kanelaAgentJar, applicationLoader)
 
       val server = {
         val mainClass = applicationLoader.loadClass(mainClassName)
@@ -244,7 +243,6 @@ object AspectJReloader {
             case (key, _) => System.clearProperty(key)
           }
         }
-        def url(): String = server.mainAddress().getHostName + ":" + server.mainAddress().getPort
       }
     } catch {
       case e: Throwable =>
@@ -299,7 +297,7 @@ object AspectJReloader {
 
     server.reload() // it's important to initialize the server
 
-    new AspectJReloader.DevServer {
+    new KanelaReloader.DevServer {
       val buildLink: BuildLink = _buildLink
 
       /** Allows to register a listener that will be triggered a monitored file is changed. */
@@ -308,16 +306,13 @@ object AspectJReloader {
       /** Reloads the application.*/
       def reload(): Unit = ()
 
-      /** URL at which the application is running (if started) */
-      def url(): String = server.mainAddress().getHostName + ":" + server.mainAddress().getPort
-
       def close(): Unit = server.stop()
     }
   }
 
 }
 
-class AspectJReloader(
+class KanelaReloader(
   reloadCompile: () => CompileResult,
   baseLoader: ClassLoader,
   val projectPath: File,
@@ -325,7 +320,8 @@ class AspectJReloader(
   monitoredFiles: Seq[File],
   fileWatchService: FileWatchService,
   generatedSourceHandlers: Map[String, GeneratedSourceMapping],
-  reloadLock: AnyRef) extends BuildLink {
+  reloadLock: AnyRef,
+  kanelaAgentJar: File) extends BuildLink {
 
   // The current classloader for the application
   @volatile private var currentApplicationClassLoader: Option[URLClassLoader] = None
@@ -397,7 +393,7 @@ class AspectJReloader(
         forceReloadNextTime = false
 
         // use Reloader context ClassLoader to avoid ClassLoader leaks in sbt/scala-compiler threads
-        AspectJReloader.withReloaderContextClassLoader {
+        KanelaReloader.withReloaderContextClassLoader {
           // Run the reload task, which will trigger everything to compile
           reloadCompile() match {
             case CompileFailure(exception) =>
@@ -421,8 +417,9 @@ class AspectJReloader(
                 // Create a new classloader
                 val version = classLoaderVersion.incrementAndGet
                 val name = "ReloadableClassLoader(v" + version + ")"
-                val urls = AspectJReloader.urls(classpath)
-                val loader = new NamedWeavingURLClassLoader(name, urls, baseLoader)
+                val urls = KanelaReloader.urls(classpath)
+                val loader = new NamedKanelaAwareClassLoader(name, urls, baseLoader)
+                SbtKanelaRunner.attachWithInstrumentationClassLoader(kanelaAgentJar, loader)
                 currentApplicationClassLoader = Some(loader)
                 loader
               } else {
@@ -474,4 +471,5 @@ class AspectJReloader(
   }
 
   def getClassLoader = currentApplicationClassLoader
+
 }

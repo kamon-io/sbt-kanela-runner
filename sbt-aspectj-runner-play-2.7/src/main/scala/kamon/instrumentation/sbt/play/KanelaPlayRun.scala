@@ -1,5 +1,6 @@
 package kamon.instrumentation.sbt.play
 
+import kamon.instrumentation.sbt.SbtKanelaRunner
 import play.core.BuildLink
 import play.dev.filewatch.{SourceModificationWatch => PlaySourceModificationWatch, WatchState => PlayWatchState}
 import play.sbt.PlayImport.PlayKeys._
@@ -12,14 +13,14 @@ import sbt.{AttributeKey, Compile, Def, InputTask, Keys, Project, State, TaskKey
 
 import scala.annotation.tailrec
 
-object AspectJPlayRun {
+object KanelaPlayRun {
 
   // This file was copied and modified from the URL bellow since there was no other sensible way to our
   // current knowledge of changing the Classloaders to support AspectJ as we did for Play 2.4/2.5
   //
   // https://github.com/playframework/playframework/blob/master/framework/src/sbt-plugin/src/main/scala/play/sbt/run/PlayRun.scala#L49-L180
 
-  val playWithAspectJRunTask = playRunTask(playRunHooks, playDependencyClasspath,
+  val playWithKanelaRunTask = playRunTask(playRunHooks, playDependencyClasspath,
     playReloaderClasspath, playAssetsClassLoader)
 
   def playRunTask(
@@ -41,7 +42,7 @@ object AspectJPlayRun {
       () => Project.runTask(streamsManager in scope, state).map(_._2).get.toEither.right.toOption
     )
 
-    lazy val devModeServer = AspectJReloader.startDevMode(
+    lazy val devModeServer = KanelaReloader.startDevMode(
       runHooks.value,
       (javaOptions in sbt.Runtime).value,
       playCommonClassloader.value,
@@ -57,7 +58,8 @@ object AspectJPlayRun {
       devSettings.value,
       args,
       (mainClass in (Compile, Keys.run)).value.get,
-      AspectJPlayRun
+      KanelaPlayRun,
+      SbtKanelaRunner.Keys.kanelaAgentJar.value
     )
 
     interaction match {

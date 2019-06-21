@@ -27,13 +27,13 @@ import net.bytebuddy.agent.ByteBuddyAgent
 object SbtKanelaRunner extends AutoPlugin {
 
   val KanelaRunner = config("kanela-runner")
-  val DefaultAspectJVersion = "0.0.17"
-  val SecondaryClassLoaderProp = "kanela.instrumentation.secondaryClassLoader"
+  val DefaultKanelaVersion = "1.0.0-RC2"
+  val InstrumentationClassLoaderProp = "kanela.instrumentation.classLoader"
 
   object Keys {
     val kanelaVersion = SettingKey[String]("kanela-version")
     val kanelaAgentJar = TaskKey[File]("kanela-agent-jar")
-    val kanelaRunnerJvmForkOptions = TaskKey[Seq[String]]("aspectj-runner-options")
+    val kanelaRunnerJvmForkOptions = TaskKey[Seq[String]]("kanela-runner-options")
   }
 
   import Keys._
@@ -43,7 +43,7 @@ object SbtKanelaRunner extends AutoPlugin {
   override def projectConfigurations: Seq[Configuration] = Seq(KanelaRunner)
 
   override def projectSettings: Seq[Setting[_]] = Seq(
-    kanelaVersion := DefaultAspectJVersion,
+    kanelaVersion := DefaultKanelaVersion,
     kanelaAgentJar := findKanelaAgentJar.value,
     kanelaRunnerJvmForkOptions := jvmForkOptions.value,
     libraryDependencies += kanelaAgentDependency.value,
@@ -89,31 +89,28 @@ object SbtKanelaRunner extends AutoPlugin {
   @volatile private var hasBeenAttached = false
 
   def attachWithInstrumentationClassLoader(kanelaAgentJar: File, instrumentationClassLoader: ClassLoader): Unit = {
-
-    withSecondaryClassLoader(instrumentationClassLoader) {
+    withInstrumentationClassLoader(instrumentationClassLoader) {
       if(!hasBeenAttached) {
-        println("TRYING TO ATTACH KANELA!!!")
         ByteBuddyAgent.attach(kanelaAgentJar, pid())
         hasBeenAttached = true
 
       } else {
-        println("TRYING TO RELOAD KANELA!!!")
+
+        // We know that if the agent has been attached, its classes are in the System ClassLoader so we try to find
+        // the Kanela class from there and reload it.
         Class.forName("kanela.agent.Kanela", true, ClassLoader.getSystemClassLoader)
           .getDeclaredMethod("reload")
           .invoke(null)
       }
     }
-
-
-
   }
 
-  private def withSecondaryClassLoader[T](classLoader: ClassLoader)(thunk: => T): T = {
+  def withInstrumentationClassLoader[T](classLoader: ClassLoader)(thunk: => T): T = {
     try {
-      System.getProperties.put(SecondaryClassLoaderProp, classLoader)
+      System.getProperties.put(InstrumentationClassLoaderProp, classLoader)
       thunk
     } finally {
-      System.getProperties.remove(SecondaryClassLoaderProp)
+      System.getProperties.remove(InstrumentationClassLoaderProp)
     }
   }
 
@@ -143,27 +140,9 @@ object SbtKanelaRunner extends AutoPlugin {
     private def run0(mainClassName: String, classpath: Seq[File], options: Seq[String], log: Logger): Unit = {
       log.debug("  Classpath:\n\t" + classpath.mkString("\n\t"))
       val applicationLoader = makeLoader(classpath, instance, nativeTmp)
-
-      //printHierarchy(applicationLoader)
-
       attachWithInstrumentationClassLoader(kanelaAgentJar, applicationLoader)
       val main = getMainMethod(mainClassName, applicationLoader)
       invokeMain(applicationLoader, main, options)
-    }
-
-    var depth = 0
-    var printed = 0
-
-    def printHierarchy(classLoader: ClassLoader): Unit = {
-      if(classLoader.getParent != null) {
-        depth += 1
-        printed += 1
-        printHierarchy(classLoader.getParent)
-      }
-
-      val padding = "=" * (depth - printed)
-      printed -= 1
-      println(s"$padding ClassLoader: ${classLoader.toString}, implementation class: ${classLoader.getClass.toString}")
     }
 
     private def createClasspathResources(appPaths: Seq[File], bootPaths: Seq[File]): Map[String, String] = {
@@ -195,5 +174,4 @@ object SbtKanelaRunner extends AutoPlugin {
       method
     }
   }
-
 }

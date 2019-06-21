@@ -19,35 +19,36 @@ package kamon.instrumentation.sbt.play
 import java.net.URL
 
 import _root_.play.sbt.PlayImport.PlayKeys._
-import _root_.play.sbt.{Colors, PlayRunHook, PlayWeb}
-import kamon.instrumentation.sbt.SbtAspectJRunner
-import org.aspectj.weaver.loadtime.WeavingURLClassLoader
+import _root_.play.sbt.{Colors, Play, PlayRunHook}
+import com.lightbend.sbt.javaagent.JavaAgent
+import com.lightbend.sbt.javaagent.JavaAgent.JavaAgentKeys.javaAgents
+import kamon.instrumentation.sbt.SbtKanelaRunner.Keys.kanelaVersion
+import kamon.instrumentation.sbt.{KanelaOnSystemClassLoader, SbtKanelaRunner}
 import sbt.Keys._
 import sbt._
 
-object SbtAspectJRunnerPlay extends AutoPlugin {
+object SbtKanelaRunnerPlay extends AutoPlugin {
 
   override def trigger = AllRequirements
-  override def requires = PlayWeb && SbtAspectJRunner
+  override def requires = Play && SbtKanelaRunner && JavaAgent
 
   override def projectSettings: Seq[Setting[_]] = Seq(
-    Keys.run in Compile := AspectJPlayRun.playWithAspectJRunTask.evaluated,
-    playRunHooks += runningWithAspectJNoticeHook.value,
-    javaOptions in Runtime += "-Dorg.aspectj.tracing.factory=default",
-    libraryDependencies += "org.aspectj" % "aspectjtools" % "1.8.13"
+    Keys.run in Compile := KanelaPlayRun.playWithKanelaRunTask.evaluated,
+    playRunHooks += runningWithKanelaNotice.value,
+    javaAgents += "io.kamon" % "kanela-agent" % kanelaVersion.value
   )
 
-  def runningWithAspectJNoticeHook: Def.Initialize[Task[RunningWithAspectJNotice]] = Def.task {
-    new RunningWithAspectJNotice(streams.value.log)
+  def runningWithKanelaNotice: Def.Initialize[Task[RunningWithKanelaNotice]] = Def.task {
+    new RunningWithKanelaNotice(streams.value.log)
   }
 
-  class RunningWithAspectJNotice(log: Logger) extends PlayRunHook {
+  class RunningWithKanelaNotice(log: Logger) extends PlayRunHook {
     override def beforeStarted(): Unit = {
-      log.info(Colors.green("Running the application with Aspectj Weaver"))
+      log.info(Colors.green("Running the application with the Kanela agent"))
     }
   }
 
-  class NamedWeavingURLClassLoader(name: String, urls: Array[URL], parent: ClassLoader) extends WeavingURLClassLoader(urls, parent) {
+  class NamedKanelaAwareClassLoader(name: String, urls: Array[URL], parent: ClassLoader) extends KanelaOnSystemClassLoader(urls, parent) {
     override def toString = name + "{" + getURLs.map(_.toString).mkString(", ") + "}"
   }
 }
