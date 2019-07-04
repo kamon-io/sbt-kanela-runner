@@ -25,7 +25,7 @@ doing so can be challenging when running from SBT. These plugins take care of th
 Add the `sbt-kanela-runner` plugin to your `project/plugins.sbt` file using the code bellow:
 
 ```scala
-resolvers += Resolver.bintrayRepo("kamon-io", "sbt-plugins")
+resolvers += Resolver.bintrayIvyRepo("kamon-io", "sbt-plugins")
 addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.0.0-RC1")
 ```
 
