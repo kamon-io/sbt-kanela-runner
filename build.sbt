@@ -37,7 +37,7 @@ lazy val kanelaRunner = Project("kanela-runner", file("sbt-kanela-runner"))
     libraryDependencies += "net.bytebuddy" % "byte-buddy-agent" % "1.9.12"
   )
 
-lazy val kanelaRunnerPlay26 = Project("kanela-runner-play-26", file("sbt-aspectj-runner-play-2.6"))
+lazy val kanelaRunnerPlay26 = Project("kanela-runner-play-26", file("sbt-kanela-runner-play-2.6"))
   .dependsOn(kanelaRunner)
   .settings(
     sbtPlugin := true,
@@ -49,7 +49,7 @@ lazy val kanelaRunnerPlay26 = Project("kanela-runner-play-26", file("sbt-aspectj
     )
   )
 
-lazy val kanelaRunnerPlay27 = Project("kanela-runner-play-27", file("sbt-aspectj-runner-play-2.7"))
+lazy val kanelaRunnerPlay27 = Project("kanela-runner-play-27", file("sbt-kanela-runner-play-2.7"))
   .dependsOn(kanelaRunner)
   .settings(
     sbtPlugin := true,
