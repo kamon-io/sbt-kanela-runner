@@ -43,7 +43,7 @@ lazy val kanelaRunnerPlay26 = Project("kanela-runner-play-26", file("sbt-kanela-
     sbtPlugin := true,
     name := "sbt-kanela-runner-play-2.6",
     moduleName := "sbt-kanela-runner-play-2.6",
-    bintrayPackage := "sbt-kanela-runner",
+    bintrayPackage := "sbt-kanela-runner-play-2.6",
     libraryDependencies ++= Seq(
       crossSbtDependency(playSbtPluginFor26, (sbtBinaryVersion in pluginCrossBuild).value, scalaBinaryVersion.value)
     )
@@ -55,7 +55,7 @@ lazy val kanelaRunnerPlay27 = Project("kanela-runner-play-27", file("sbt-kanela-
     sbtPlugin := true,
     name := "sbt-kanela-runner-play-2.7",
     moduleName := "sbt-kanela-runner-play-2.7",
-    bintrayPackage := "sbt-kanela-runner",
+    bintrayPackage := "sbt-kanela-runner-play-2.7",
     libraryDependencies ++= Seq(
       crossSbtDependency(playSbtPluginFor27, (sbtBinaryVersion in pluginCrossBuild).value, scalaBinaryVersion.value)
     )
