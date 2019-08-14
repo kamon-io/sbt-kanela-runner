@@ -21,8 +21,8 @@ def crossSbtDependency(module: ModuleID, sbtVersion: String, scalaVersion: Strin
   Defaults.sbtPluginExtra(module, sbtVersion, scalaVersion)
 }
 
-val playSbtPluginFor26 = "com.typesafe.play" % "sbt-plugin" % "2.6.11"
-val playSbtPluginFor27 = "com.typesafe.play" % "sbt-plugin" % "2.7.0"
+val playSbtPluginFor26 = "com.typesafe.play" % "sbt-plugin" % "2.6.23"
+val playSbtPluginFor27 = "com.typesafe.play" % "sbt-plugin" % "2.7.3"
 
 
 lazy val sbtKanelaRunner = Project("sbt-kanela-runner", file("."))

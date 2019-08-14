@@ -1,11 +1,11 @@
-package kamon.instrumentation.sbt.play
+package play.sbt.run
 
 import kamon.instrumentation.sbt.SbtKanelaRunner
+import kamon.instrumentation.sbt.play.KanelaReloader
 import play.core.BuildLink
 import play.dev.filewatch.{SourceModificationWatch => PlaySourceModificationWatch, WatchState => PlayWatchState}
 import play.sbt.PlayImport.PlayKeys._
 import play.sbt.PlayInternalKeys._
-import play.sbt.run.PlayReload
 import play.sbt.run.PlayRun.{generatedSourceHandlers, getPollInterval, getSourcesFinder, sleepForPoolDelay}
 import play.sbt.{Colors, PlayNonBlockingInteractionMode}
 import sbt.Keys._
@@ -13,12 +13,12 @@ import sbt.{AttributeKey, Compile, Def, InputTask, Keys, Project, State, TaskKey
 
 import scala.annotation.tailrec
 
-object KanelaPlayRun {
+object KanelaPlayRun extends PlayRunCompat {
 
   // This file was copied and modified from the URL bellow since there was no other sensible way to our
   // current knowledge of changing the Classloaders to support AspectJ as we did for Play 2.4/2.5
   //
-  // https://github.com/playframework/playframework/blob/master/framework/src/sbt-plugin/src/main/scala/play/sbt/run/PlayRun.scala#L49-L180
+  // https://raw.githubusercontent.com/playframework/playframework/2.6.23/dev-mode/sbt-plugin/src/main/scala/play/sbt/run/PlayRun.scala
 
   val playWithKanelaRunTask = playRunTask(playRunHooks, playDependencyClasspath,
     playReloaderClasspath, playAssetsClassLoader)
@@ -72,19 +72,12 @@ object KanelaPlayRun {
         println(Colors.green("(Server started, use Enter to stop and go back to the console...)"))
         println()
 
-        // If we have both Watched.Configuration and Watched.ContinuousState
-        // attributes and if Watched.ContinuousState.count is 1 then we assume
-        // we're in ~ run mode
-        val maybeContinuous = for {
-          watched <- state.get(Watched.Configuration)
-          watchState <- state.get(Watched.ContinuousState)
-          if watchState.count == 1
-        } yield watched
+        val maybeContinuous: Option[Watched] = watchContinuously(state, Keys.sbtVersion.value)
 
         maybeContinuous match {
           case Some(watched) =>
             // ~ run mode
-            interaction doWithoutEcho {
+            interaction.doWithoutEcho {
               twiddleRunMonitor(watched, state, devModeServer.buildLink, Some(PlayWatchState.empty))
             }
           case None =>
@@ -108,7 +101,7 @@ object KanelaPlayRun {
     @tailrec def shouldTerminate: Boolean = (System.in.available > 0) && (isEOF(System.in.read()) || shouldTerminate)
 
     val sourcesFinder: PlaySourceModificationWatch.PathFinder = getSourcesFinder(watched, state)
-    val watchState = ws.getOrElse(state get ContinuousState getOrElse PlayWatchState.empty)
+    val watchState                                            = ws.getOrElse(state.get(ContinuousState).getOrElse(PlayWatchState.empty))
 
     val (triggered, newWatchState, newState) =
       try {

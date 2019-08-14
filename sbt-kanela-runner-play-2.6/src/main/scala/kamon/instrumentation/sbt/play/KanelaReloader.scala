@@ -1,5 +1,5 @@
 // File contents partially copied from:
-// https://github.com/playframework/playframework/blob/2.6.11/framework/src/run-support/src/main/scala/play/runsupport/Reloader.scala
+// https://raw.githubusercontent.com/playframework/playframework/2.6.23/dev-mode/run-support/src/main/scala/play/runsupport/Reloader.scala
 package kamon.instrumentation.sbt.play
 
 import java.io.{Closeable, File}
@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.{Timer, TimerTask}
 
 import better.files.{File => _, _}
-import SbtKanelaRunnerPlay.NamedKanelaAwareClassLoader
+import SbtKanelaRunnerPlay.SbtKanelaClassLoader
 import kamon.instrumentation.sbt.SbtKanelaRunner
 import play.core.{Build, BuildLink}
 import play.dev.filewatch.FileWatchService
@@ -73,7 +73,7 @@ object KanelaReloader {
     val properties = propertyArgs.map(_.drop(2).split('=')).map(a => a(0) -> a(1)).toSeq
 
     val props = properties.toMap
-    def prop(key: String): Option[String] = props.get(key) orElse sys.props.get(key)
+    def prop(key: String): Option[String] = props.get(key).orElse(sys.props.get(key))
 
     def parsePortValue(portValue: Option[String], defaultValue: Option[Int] = None): Option[Int] = {
       portValue match {
@@ -86,15 +86,17 @@ object KanelaReloader {
     // http port can be defined as the first non-property argument, or a -Dhttp.port argument or system property
     // the http port can be disabled (set to None) by setting any of the input methods to "disabled"
     // Or it can be defined in devSettings as "play.server.http.port"
-    val httpPortString: Option[String] = otherArgs.headOption orElse prop("http.port") orElse devSettings.toMap.get("play.server.http.port")
+    val httpPortString: Option[String] =
+      otherArgs.headOption.orElse(prop("http.port")).orElse(devSettings.toMap.get("play.server.http.port"))
     val httpPort: Option[Int] = parsePortValue(httpPortString, Option(defaultHttpPort))
 
     // https port can be defined as a -Dhttps.port argument or system property
-    val httpsPortString: Option[String] = prop("https.port") orElse devSettings.toMap.get("play.server.https.port")
+    val httpsPortString: Option[String] = prop("https.port").orElse(devSettings.toMap.get("play.server.https.port"))
     val httpsPort = parsePortValue(httpsPortString)
 
     // http address can be defined as a -Dhttp.address argument or system property
-    val httpAddress = prop("http.address") orElse devSettings.toMap.get("play.server.http.address") getOrElse defaultHttpAddress
+    val httpAddress =
+      prop("http.address").orElse(devSettings.toMap.get("play.server.http.address")).getOrElse(defaultHttpAddress)
 
     (properties, httpPort, httpsPort, httpAddress)
   }
@@ -124,6 +126,9 @@ object KanelaReloader {
 
     /** Reloads the application.*/
     def reload(): Unit
+
+    /** URL at which the application is running (if started) */
+    def url(): String
   }
 
   /**
@@ -139,7 +144,8 @@ object KanelaReloader {
     generatedSourceHandlers: Map[String, GeneratedSourceMapping],
     defaultHttpPort: Int, defaultHttpAddress: String, projectPath: File,
     devSettings: Seq[(String, String)], args: Seq[String],
-    mainClassName: String, reloadLock: AnyRef,
+    mainClassName: String,
+    reloadLock: AnyRef,
     kanelaAgentJar: File
   ): DevServer = {
 
@@ -204,9 +210,21 @@ object KanelaReloader {
       def get: URLClassLoader = { reloader.getClassLoader.orNull }
     })
 
-    lazy val applicationLoader = new NamedKanelaAwareClassLoader("DependencyClassLoader", urls(dependencyClasspath), delegatingLoader)
+    lazy val applicationLoader =
+    new SbtKanelaClassLoader("DependencyClassLoader", urls(dependencyClasspath), delegatingLoader, loadH2Driver = true)
     lazy val assetsLoader = assetsClassLoader(applicationLoader)
-    lazy val reloader = new KanelaReloader(reloadCompile, assetsLoader, projectPath, devSettings, monitoredFiles, fileWatchService, generatedSourceHandlers, reloadLock, kanelaAgentJar)
+
+    lazy val reloader = new KanelaReloader(
+      reloadCompile,
+      assetsLoader,
+      projectPath,
+      devSettings,
+      monitoredFiles,
+      fileWatchService,
+      generatedSourceHandlers,
+      reloadLock,
+      kanelaAgentJar
+      )
 
     try {
       // Now we're about to start, let's call the hooks:
@@ -243,6 +261,7 @@ object KanelaReloader {
             case (key, _) => System.clearProperty(key)
           }
         }
+        def url(): String = server.mainAddress().getHostName + ":" + server.mainAddress().getPort
       }
     } catch {
       case e: Throwable =>
@@ -305,6 +324,9 @@ object KanelaReloader {
 
       /** Reloads the application.*/
       def reload(): Unit = ()
+
+      /** URL at which the application is running (if started) */
+      def url(): String = server.mainAddress().getHostName + ":" + server.mainAddress().getPort
 
       def close(): Unit = server.stop()
     }
@@ -409,7 +431,9 @@ class KanelaReloader(
               // they won't trigger a reload.
               val classpathFiles = classpath.iterator.filter(_.exists()).flatMap(_.toScala.listRecursively).map(_.toJava)
               val newLastModified =
-                (0L /: classpathFiles) { (acc, file) => math.max(acc, file.lastModified) }
+                classpathFiles.foldLeft(0L) { (acc, file) =>
+                  math.max(acc, file.lastModified)
+                }
               val triggered = newLastModified > lastModified
               lastModified = newLastModified
 
@@ -418,7 +442,7 @@ class KanelaReloader(
                 val version = classLoaderVersion.incrementAndGet
                 val name = "ReloadableClassLoader(v" + version + ")"
                 val urls = KanelaReloader.urls(classpath)
-                val loader = new NamedKanelaAwareClassLoader(name, urls, baseLoader)
+                val loader = new SbtKanelaClassLoader(name, urls, baseLoader)
                 SbtKanelaRunner.attachWithInstrumentationClassLoader(kanelaAgentJar, loader)
                 currentApplicationClassLoader = Some(loader)
                 loader
@@ -438,7 +462,7 @@ class KanelaReloader(
     devSettings.toMap.asJava
   }
 
-  def forceReload() {
+  def forceReload(): Unit = {
     forceReloadNextTime = true
   }
 

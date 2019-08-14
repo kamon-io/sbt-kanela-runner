@@ -24,6 +24,7 @@ import com.lightbend.sbt.javaagent.JavaAgent
 import com.lightbend.sbt.javaagent.JavaAgent.JavaAgentKeys.javaAgents
 import kamon.instrumentation.sbt.SbtKanelaRunner.Keys.kanelaVersion
 import kamon.instrumentation.sbt.{KanelaOnSystemClassLoader, SbtKanelaRunner}
+import play.sbt.run.KanelaPlayRun
 import sbt.Keys._
 import sbt._
 
@@ -48,7 +49,31 @@ object SbtKanelaRunnerPlay extends AutoPlugin {
     }
   }
 
-  class NamedKanelaAwareClassLoader(name: String, urls: Array[URL], parent: ClassLoader) extends KanelaOnSystemClassLoader(urls, parent) {
-    override def toString = name + "{" + getURLs.map(_.toString).mkString(", ") + "}"
+  /**
+    * This ClassLoader gives a special treatment to the H2 JDBC Driver classes so that we can both instrument them while
+    * running on Development mode by loading the JDBC classes from the same ClassLoader as Kamon (the Application
+    * ClassLoader) and at the same time, allow for the H2 data to persist across runs, by letting loading of all other
+    * classes just bubble up to the common ClassLoader where the data is stored (in particlar, the Engine class which
+    * has references to all databases).
+    */
+  class SbtKanelaClassLoader(name: String, urls: Array[URL], parent: ClassLoader, loadH2Driver: Boolean = false)
+      extends KanelaOnSystemClassLoader(urls, parent) {
+
+    override def toString =
+      name + "{" + getURLs.map(_.toString).mkString(", ") + "}"
+
+    override protected def loadClass(name: String, resolve: Boolean): Class[_] = {
+      if(loadH2Driver && (name.equals("org.h2.Driver") || name.startsWith("org.h2.jdbc"))) {
+        var loadedClass = findLoadedClass(name)
+        if (loadedClass == null)
+          loadedClass = findClass(name)
+
+        if(resolve)
+          resolveClass(loadedClass)
+
+        loadedClass
+
+      } else super.loadClass(name, resolve)
+    }
   }
 }
