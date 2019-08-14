@@ -25,7 +25,7 @@ doing so can be challenging when running from SBT. These plugins take care of th
 Add the `sbt-kanela-runner` plugin to your `project/plugins.sbt` file using the code bellow:
 
 ```scala
-addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.0.0")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.0.2")
 ```
 
 ### Running
@@ -46,10 +46,10 @@ For Play Framework 2.6 and 2.7 projects add the `sbt-kanela-runner-play-2.x` to 
 
 ```scala
 // For Play Framework 2.6
-addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.6" % "2.0.0")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.6" % "2.0.2")
 
 // For Play Framework 2.7
-addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.7" % "2.0.0")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.7" % "2.0.2")
 ```
 
 Then, you will need to enable the `JavaAgent` plugin on your Play project. Find your play project on your `build.sbt`
@@ -59,7 +59,7 @@ file and call `.enablePlugins(JavaAgent)` on it, it will probably look like this
 lazy val root = (project in file(".")).enablePlugins(PlayScala, JavaAgent)
 ```
 
-This plugin has been tested with **Play 2.7.0** and **Play 2.6.11**.
+This plugin has been tested with **Play 2.7.3** and **Play 2.6.23**.
 
 ### Running
 
