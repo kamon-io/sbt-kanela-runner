@@ -74,7 +74,7 @@ object SbtKanelaRunner extends AutoPlugin {
           outputStrategy = outputStrategy.value,
           bootJars = Vector.empty[java.io.File],
           workingDirectory = Some(baseDirectory.value),
-          runJVMOptions = (javaOptions.value ++ kanelaRunnerJvmForkOptions.value).toVector,
+          runJVMOptions = ((javaOptions in run).value ++ kanelaRunnerJvmForkOptions.value).toVector,
           connectInput = connectInput.value,
           envVars = environmentVariables
         )
