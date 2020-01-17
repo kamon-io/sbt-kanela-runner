@@ -68,16 +68,17 @@ object SbtKanelaRunner extends AutoPlugin {
   def kanelaRunner: Def.Initialize[Task[ScalaRun]] = Def.taskDyn {
     if ((fork in run).value) {
       Def.task {
-        val forkOptions = ForkOptions(
+        val environmentVariables = envVars.value
+        val runnerForkOptions = ForkOptions(
           javaHome = javaHome.value,
           outputStrategy = outputStrategy.value,
           bootJars = Vector.empty[java.io.File],
           workingDirectory = Some(baseDirectory.value),
           runJVMOptions = (javaOptions.value ++ kanelaRunnerJvmForkOptions.value).toVector,
           connectInput = connectInput.value,
-          envVars = Map.empty[String, String]
+          envVars = environmentVariables
         )
-        new ForkRun(forkOptions)
+        new ForkRun(runnerForkOptions)
       }
     } else {
       Def.task {
