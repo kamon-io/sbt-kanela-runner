@@ -17,8 +17,6 @@
 package kamon.instrumentation.sbt
 
 import java.lang.management.ManagementFactory
-import java.lang.reflect.Method
-import java.lang.reflect.Modifier.{isPublic, isStatic}
 
 import sbt._
 import Keys._
@@ -27,7 +25,7 @@ import net.bytebuddy.agent.ByteBuddyAgent
 object SbtKanelaRunner extends AutoPlugin {
 
   val KanelaRunner = config("kanela-runner")
-  val DefaultKanelaVersion = "1.0.3"
+  val DefaultKanelaVersion = "1.0.4"
   val InstrumentationClassLoaderProp = "kanela.instrumentation.classLoader"
 
   object Keys {
@@ -47,7 +45,7 @@ object SbtKanelaRunner extends AutoPlugin {
     kanelaAgentJar := findKanelaAgentJar.value,
     kanelaRunnerJvmForkOptions := jvmForkOptions.value,
     libraryDependencies += kanelaAgentDependency.value,
-    runner in run in Compile := kanelaRunner.value
+    runner in run in Compile := kanelaRunnerTask.value
   )
 
   def kanelaAgentDependency = Def.setting {
@@ -65,7 +63,7 @@ object SbtKanelaRunner extends AutoPlugin {
     Seq(s"-javaagent:${kanelaAgentJar.value.getAbsolutePath}")
   }
 
-  def kanelaRunner: Def.Initialize[Task[ScalaRun]] = Def.taskDyn {
+  def kanelaRunnerTask: Def.Initialize[Task[ScalaRun]] = Def.taskDyn {
     if ((fork in run).value) {
       Def.task {
         val environmentVariables = envVars.value
@@ -78,11 +76,38 @@ object SbtKanelaRunner extends AutoPlugin {
           connectInput = connectInput.value,
           envVars = environmentVariables
         )
+
         new ForkRun(runnerForkOptions)
       }
     } else {
-      Def.task {
-        new RunAndAttachKanela(kanelaAgentJar.value, scalaInstance.value, trapExit.value, taskTemporaryDirectory.value)
+      if(sbtVersion.value.startsWith("1.2")) {
+        Def.task {
+          new RunAndAttachKanela(kanelaAgentJar.value, scalaInstance.value, trapExit.value, taskTemporaryDirectory.value)
+        }
+
+      } else {
+        val kanelaJar = kanelaAgentJar.value
+        val previousRun = (runner in run in Compile).value
+        val trap = trapExit.value
+
+        Def.task {
+
+          val layeringStrategy = classLoaderLayeringStrategy.value
+          if(layeringStrategy != ClassLoaderLayeringStrategy.Flat) {
+            sLog.value.warn(
+              "The Kanela instrumentation can only be attached on the current JVM when using the " +
+              "ClassLoaderLayeringStrategy.Flat strategy but you are currently using [" + layeringStrategy +
+              "]. The application will run without instrumentation and might fail to behave properly."
+            )
+
+            previousRun
+          } else {
+            previousRun match {
+              case run: Run => new RunAndAttachKanelaOnResolvedClassLoader(kanelaJar: File, run, trap)
+              case _        => previousRun
+            }
+          }
+        }
       }
     }
   }
@@ -118,61 +143,5 @@ object SbtKanelaRunner extends AutoPlugin {
   private def pid(): String = {
     val jvm = ManagementFactory.getRuntimeMXBean.getName
     jvm.substring(0, jvm.indexOf('@'))
-  }
-
-  /**
-    * This class is a dirty copy of sbt.Run, with all required dependencies to make sure we can attach the Kanela agent
-    * on runtime.
-    */
-  class RunAndAttachKanela(kanelaAgentJar: File, instance: SbtCross.ScalaInstance, trapExit: Boolean, nativeTmp: File)
-      extends Run(instance, trapExit, nativeTmp) {
-
-    /** Runs the class 'mainClass' using the given classpath and options using the scala runner.*/
-    override def run(mainClass: String, classpath: Seq[File], options: Seq[String], log: Logger) = {
-      log.info("Running " + mainClass + " " + options.mkString(" "))
-
-      def execute() =
-        try { run0(mainClass, classpath, options, log) }
-        catch { case e: java.lang.reflect.InvocationTargetException => throw e.getCause }
-
-      if (trapExit) Run.executeTrapExit(execute(), log) else SbtCross.directExecute(execute(), log)
-    }
-
-    private def run0(mainClassName: String, classpath: Seq[File], options: Seq[String], log: Logger): Unit = {
-      log.debug("  Classpath:\n\t" + classpath.mkString("\n\t"))
-      val applicationLoader = makeLoader(classpath, instance, nativeTmp)
-      attachWithInstrumentationClassLoader(kanelaAgentJar, applicationLoader)
-      val main = getMainMethod(mainClassName, applicationLoader)
-      invokeMain(applicationLoader, main, options)
-    }
-
-    private def createClasspathResources(appPaths: Seq[File], bootPaths: Seq[File]): Map[String, String] = {
-      def make(name: String, paths: Seq[File]) = name -> Path.makeString(paths)
-      Map(make(SbtCross.AppClassPath, appPaths), make(SbtCross.BootClassPath, bootPaths))
-    }
-
-    private def makeLoader(classpath: Seq[File], instance: SbtCross.ScalaInstance, nativeTemp: File): ClassLoader = {
-      SbtCross.toLoader(classpath, createClasspathResources(classpath, instance.allJars), nativeTemp)
-    }
-
-    private def invokeMain(loader: ClassLoader, main: Method, options: Seq[String]): Unit = {
-      val currentThread = Thread.currentThread
-      val oldLoader = Thread.currentThread.getContextClassLoader
-      currentThread.setContextClassLoader(loader)
-      try { main.invoke(null, options.toArray[String]) }
-      finally { currentThread.setContextClassLoader(oldLoader) }
-    }
-
-    override def getMainMethod(mainClassName: String, loader: ClassLoader) = {
-      val mainClass = Class.forName(mainClassName, true, loader)
-      val method = mainClass.getMethod("main", classOf[Array[String]])
-      // jvm allows the actual main class to be non-public and to run a method in the non-public class,
-      //  we need to make it accessible
-      method.setAccessible(true)
-      val modifiers = method.getModifiers
-      if (!isPublic(modifiers)) throw new NoSuchMethodException(mainClassName + ".main is not public")
-      if (!isStatic(modifiers)) throw new NoSuchMethodException(mainClassName + ".main is not static")
-      method
-    }
   }
 }
