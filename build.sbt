@@ -61,7 +61,7 @@ lazy val kanelaRunnerPlay27 = Project("kanela-runner-play-27", file("sbt-kanela-
     )
   )
 
-crossSbtVersions := Seq("0.13.18", "1.2.8")
+crossSbtVersions := Seq("0.13.18", "1.3.8")
 //workaround for https://github.com/sbt/sbt/issues/3749
 scalaVersion in ThisBuild := {
   if((sbtBinaryVersion in pluginCrossBuild).value.startsWith("0.")) "2.10.7" else "2.12.8"
