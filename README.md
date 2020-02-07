@@ -4,11 +4,11 @@ sbt-kanela-runner
 [![Download](https://api.bintray.com/packages/kamon-io/sbt-plugins/sbt-kanela-runner/images/download.svg)](https://bintray.com/kamon-io/sbt-plugins/sbt-kanela-runner/_latestVersion)
 
 
-This project contains two [sbt] plugins that automatically configure your build to perform enable the Kanela
+This project contains [sbt] plugins that automatically configure your build to perform enable the Kanela
 instrumentation agent when running your application from within SBT, both for regular applications and Play Framework
-projects [in development mode.
+projects in development mode.
 
-SBT versions 0.13.x and 1.x are supported.
+SBT versions 1.2.x and 1.3.x are supported. The last version supporting SBT 0.13 was 2.0.5. 
 
 ## Why this plugin?
 
@@ -25,7 +25,7 @@ doing so can be challenging when running from SBT. These plugins take care of th
 Add the `sbt-kanela-runner` plugin to your `project/plugins.sbt` file using the code bellow:
 
 ```scala
-addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.0.2")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.0.6")
 ```
 
 ### Running
@@ -46,10 +46,13 @@ For Play Framework 2.6 and 2.7 projects add the `sbt-kanela-runner-play-2.x` to 
 
 ```scala
 // For Play Framework 2.6
-addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.6" % "2.0.2")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.6" % "2.0.6")
 
 // For Play Framework 2.7
-addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.7" % "2.0.2")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.7" % "2.0.6")
+
+// For Play Framework 2.8
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.7" % "2.0.6")
 ```
 
 Then, you will need to enable the `JavaAgent` plugin on your Play project. Find your play project on your `build.sbt`
@@ -59,7 +62,7 @@ file and call `.enablePlugins(JavaAgent)` on it, it will probably look like this
 lazy val root = (project in file(".")).enablePlugins(PlayScala, JavaAgent)
 ```
 
-This plugin has been tested with **Play 2.7.3** and **Play 2.6.23**.
+This plugin has been tested with **Play 2.8.0**, **Play 2.7.3** and **Play 2.6.23**.
 
 ### Running
 
