@@ -264,7 +264,7 @@ object KanelaReloader {
     try {
       // Now we're about to start, let's call the hooks:
       runHooks.run(_.beforeStarted())
-      SbtKanelaRunner.attachWithInstrumentationClassLoader(kanelaAgentJar, applicationLoader)
+      SbtKanelaRunner.attachWithInstrumentationClassLoader(kanelaAgentJar, applicationLoader, clearRegistry = true)
 
       val server = {
         val mainClass = applicationLoader.loadClass(mainClassName)
@@ -485,7 +485,7 @@ class KanelaReloader(
                 val name = "ReloadableClassLoader(v" + version + ")"
                 val urls = KanelaReloader.urls(classpath)
                 val loader = new SbtKanelaClassLoader(name, urls, baseLoader)
-                SbtKanelaRunner.attachWithInstrumentationClassLoader(kanelaAgentJar, loader)
+                SbtKanelaRunner.attachWithInstrumentationClassLoader(kanelaAgentJar, loader, clearRegistry = false)
                 currentApplicationClassLoader = Some(loader)
                 loader
               } else {

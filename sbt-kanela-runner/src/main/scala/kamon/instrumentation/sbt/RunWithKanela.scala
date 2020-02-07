@@ -26,7 +26,7 @@ class RunAndAttachKanelaOnResolvedClassLoader(kanelaJar: File, newLoader: Seq[Fi
       log: Logger
     ): Try[Unit] = {
 
-    SbtKanelaRunner.attachWithInstrumentationClassLoader(kanelaJar, loader)
+    SbtKanelaRunner.attachWithInstrumentationClassLoader(kanelaJar, loader, true)
     super.runWithLoader(loader, classpath, mainClass, options, log)
   }
 }
@@ -52,7 +52,7 @@ class RunAndAttachKanela(kanelaAgentJar: File, instance: SbtCross.ScalaInstance,
   private def run0(mainClassName: String, classpath: Seq[File], options: Seq[String], log: Logger): Unit = {
     log.debug("  Classpath:\n\t" + classpath.mkString("\n\t"))
     val applicationLoader = makeLoader(classpath, instance, nativeTmp)
-    attachWithInstrumentationClassLoader(kanelaAgentJar, applicationLoader)
+    attachWithInstrumentationClassLoader(kanelaAgentJar, applicationLoader, true)
     val main = getMainMethod(mainClassName, applicationLoader)
     invokeMain(applicationLoader, main, options)
   }

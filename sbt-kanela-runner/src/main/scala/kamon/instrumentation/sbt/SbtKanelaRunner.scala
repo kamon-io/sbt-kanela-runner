@@ -114,7 +114,9 @@ object SbtKanelaRunner extends AutoPlugin {
 
   @volatile private var hasBeenAttached = false
 
-  def attachWithInstrumentationClassLoader(kanelaAgentJar: File, instrumentationClassLoader: ClassLoader): Unit = {
+  def attachWithInstrumentationClassLoader(kanelaAgentJar: File, instrumentationClassLoader: ClassLoader,
+      clearRegistry: Boolean): Unit = {
+
     withInstrumentationClassLoader(instrumentationClassLoader) {
       if(!hasBeenAttached) {
         ByteBuddyAgent.attach(kanelaAgentJar, pid())
@@ -125,8 +127,8 @@ object SbtKanelaRunner extends AutoPlugin {
         // We know that if the agent has been attached, its classes are in the System ClassLoader so we try to find
         // the Kanela class from there and reload it.
         Class.forName("kanela.agent.Kanela", true, ClassLoader.getSystemClassLoader)
-          .getDeclaredMethod("reload")
-          .invoke(null)
+          .getDeclaredMethod("reload", classOf[Boolean])
+          .invoke(null, Boolean.box(clearRegistry))
       }
     }
   }
