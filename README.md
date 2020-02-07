@@ -28,6 +28,10 @@ Add the `sbt-kanela-runner` plugin to your `project/plugins.sbt` file using the 
 addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.0.6")
 ```
 
+### Important
+This plugin will only work properly on SBT 1.3 if the `classLoaderLayeringStrategy` setting is set to `Flat` or you set
+`fork in run := true`. 
+
 ### Running
 
 Just `run`, like you do all the time!
@@ -52,7 +56,7 @@ addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.6" % "2.0.6")
 addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.7" % "2.0.6")
 
 // For Play Framework 2.8
-addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.7" % "2.0.6")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.8" % "2.0.6")
 ```
 
 Then, you will need to enable the `JavaAgent` plugin on your Play project. Find your play project on your `build.sbt`
