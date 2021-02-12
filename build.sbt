@@ -21,8 +21,8 @@ def crossSbtDependency(module: ModuleID, sbtVersion: String, scalaVersion: Strin
   Defaults.sbtPluginExtra(module, sbtVersion, scalaVersion)
 }
 
-val playSbtPluginFor26 = "com.typesafe.play" % "sbt-plugin" % "2.6.23"
-val playSbtPluginFor27 = "com.typesafe.play" % "sbt-plugin" % "2.7.3"
+val playSbtPluginFor26 = "com.typesafe.play" % "sbt-plugin" % "2.6.25"
+val playSbtPluginFor27 = "com.typesafe.play" % "sbt-plugin" % "2.7.9"
 val playSbtPluginFor28 = "com.typesafe.play" % "sbt-plugin" % "2.8.7"
 
 
