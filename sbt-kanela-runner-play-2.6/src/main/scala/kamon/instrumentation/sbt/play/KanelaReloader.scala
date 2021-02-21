@@ -8,10 +8,10 @@ import java.security.{AccessController, PrivilegedAction}
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicReference
 import java.util.{Timer, TimerTask}
-
 import better.files.{File => _, _}
 import SbtKanelaRunnerPlay.SbtKanelaClassLoader
 import kamon.instrumentation.sbt.SbtKanelaRunner
+import org.slf4j.LoggerFactory
 import play.core.{Build, BuildLink}
 import play.dev.filewatch.FileWatchService
 import play.runsupport.{NamedURLClassLoader, ServerStartException}
@@ -229,6 +229,18 @@ object KanelaReloader {
     try {
       // Now we're about to start, let's call the hooks:
       runHooks.run(_.beforeStarted())
+
+      // Related to https://github.com/kamon-io/kanela/issues/116
+      //
+      // There is *some* problem happening when loading the org.apache.logging.log4j.util.PropertiesUtil on SBT 1.4.0+
+      // that prevents applications from running on Development Mode. I suspect that there is an issue with either the
+      // Context ClassLoader we are setting while Kanela gets attached, or with our implementation of ClassLoader
+      // delegation.
+      //
+      // This hack forces the Log4J-related classes to be loaded before we do the ClassLoader trickery and  allows
+      // applications to launch.
+      val forceLoadingLog4jClasses = LoggerFactory.getLogger("sbt-kanela-runner-hack")
+
       SbtKanelaRunner.attachWithInstrumentationClassLoader(kanelaAgentJar, applicationLoader, clearRegistry = true)
 
       val server = {
