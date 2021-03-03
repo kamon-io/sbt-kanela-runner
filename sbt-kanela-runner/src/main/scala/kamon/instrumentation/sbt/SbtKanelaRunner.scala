@@ -25,7 +25,7 @@ import net.bytebuddy.agent.ByteBuddyAgent
 object SbtKanelaRunner extends AutoPlugin {
 
   val KanelaRunner = config("kanela-runner")
-  val DefaultKanelaVersion = "1.0.7"
+  val DefaultKanelaVersion = "1.0.8"
   val InstrumentationClassLoaderProp = "kanela.instrumentation.classLoader"
 
   object Keys {
@@ -45,7 +45,8 @@ object SbtKanelaRunner extends AutoPlugin {
     kanelaAgentJar := findKanelaAgentJar.value,
     kanelaRunnerJvmForkOptions := jvmForkOptions.value,
     libraryDependencies += kanelaAgentDependency.value,
-    runner in run in Compile := kanelaRunnerTask.value
+    runner in run in Compile := kanelaRunnerTask.value,
+    resolvers += Resolver.mavenLocal
   )
 
   def kanelaAgentDependency = Def.setting {

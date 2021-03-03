@@ -25,7 +25,7 @@ doing so can be challenging when running from SBT. These plugins take care of th
 Add the `sbt-kanela-runner` plugin to your `project/plugins.sbt` file using the code bellow:
 
 ```scala
-addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.0.6")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.0.10")
 ```
 
 ### Important
@@ -50,13 +50,13 @@ For Play Framework 2.6 and 2.7 projects add the `sbt-kanela-runner-play-2.x` to 
 
 ```scala
 // For Play Framework 2.6
-addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.6" % "2.0.6")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.6" % "2.0.10")
 
 // For Play Framework 2.7
-addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.7" % "2.0.6")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.7" % "2.0.10")
 
 // For Play Framework 2.8
-addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.8" % "2.0.6")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.8" % "2.0.10")
 ```
 
 Then, you will need to enable the `JavaAgent` plugin on your Play project. Find your play project on your `build.sbt`
@@ -73,6 +73,25 @@ This plugin has been tested with **Play 2.8.0**, **Play 2.7.3** and **Play 2.6.2
 Just `run`, like you do all the time! A notice will be shown saying that you are running your application with Kanela.
 
 
+## Lagom Projects
+### Configuration
+
+For Lagom Framework 1.6 add the `sbt-kanela-runner-lagom-1.6` plugin to your `project/plugins.sbt` file:
+
+```scala
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-lagom-1.6" % "2.0.10")
+```
+
+Then you will need to explicitly enable the `JavaAgent` and `SbtKanelaRunnerLagom` plugins in one (and only one) of your 
+Lagom implementation projects in the `build.sbt` file. Beware that Kanela can only instrument one service at a time:
+
+```scala
+lazy val `hello-impl` = (project in file("hello-impl"))
+  .enablePlugins(LagomScala, JavaAgent, SbtKanelaRunnerLagom)
+```
+
+### Running
+Execute `runAll` as you normally would.
 
 [sbt]: https://github.com/sbt/sbt
 [play]: https://www.playframework.com
