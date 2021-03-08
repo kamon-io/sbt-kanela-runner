@@ -1,8 +1,5 @@
 sbt-kanela-runner
 =========
-[![Build Status](https://travis-ci.org/kamon-io/sbt-kanela-runner.png)](https://travis-ci.org/kamon-io/sbt-kanela-runner)
-[![Download](https://api.bintray.com/packages/kamon-io/sbt-plugins/sbt-kanela-runner/images/download.svg)](https://bintray.com/kamon-io/sbt-plugins/sbt-kanela-runner/_latestVersion)
-
 
 This project contains [sbt] plugins that automatically configure your build to perform enable the Kanela
 instrumentation agent when running your application from within SBT, both for regular applications and Play Framework
