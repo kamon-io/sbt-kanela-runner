@@ -76,6 +76,7 @@ Just `run`, like you do all the time! A notice will be shown saying that you are
 For Lagom Framework 1.6 add the `sbt-kanela-runner-lagom-1.6` plugin to your `project/plugins.sbt` file:
 
 ```scala
+resolvers += Resolver.bintrayIvyRepo("kamon-io", "sbt-plugins")
 addSbtPlugin("io.kamon" % "sbt-kanela-runner-lagom-1.6" % "2.0.10")
 ```
 
