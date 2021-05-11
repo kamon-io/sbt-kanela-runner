@@ -44,8 +44,11 @@ object SbtKanelaRunner extends AutoPlugin {
     kanelaVersion := DefaultKanelaVersion,
     kanelaAgentJar := findKanelaAgentJar.value,
     kanelaRunnerJvmForkOptions := jvmForkOptions.value,
-    libraryDependencies += kanelaAgentDependency.value,
-    runner in run in Compile := kanelaRunnerTask.value
+    libraryDependencies += kanelaAgentDependency.value
+  ) ++ inConfig(Compile)(
+    inTask(run)(
+      runner := kanelaRunnerTask.value
+    )
   )
 
   def kanelaAgentDependency = Def.setting {
