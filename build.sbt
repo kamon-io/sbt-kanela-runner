@@ -14,8 +14,22 @@
  * =========================================================================================
  */
 
-import sbt._
+import sbt.{Developer, _}
 import sbt.Keys._
+
+inThisBuild(List(
+  organization := "io.kamon",
+  homepage := Some(url("https://kamon.io")),
+  licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+  developers := List(
+    Developer(
+      "ivantopo",
+      "Ivan Topolnjak",
+      "ivantopo@kamon.io",
+      url("https://github/ivantopo")
+    )
+  )
+))
 
 def crossSbtDependency(module: ModuleID, sbtVersion: String, scalaVersion: String): ModuleID = {
   Defaults.sbtPluginExtra(module, sbtVersion, scalaVersion)
