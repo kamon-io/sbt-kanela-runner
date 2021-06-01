@@ -18,6 +18,7 @@ import sbt.{Developer, _}
 import sbt.Keys._
 
 inThisBuild(List(
+  sbtPlugin := true,
   organization := "io.kamon",
   homepage := Some(url("https://kamon.io")),
   licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
@@ -42,7 +43,9 @@ val lagomSbtPluginFor16 = "com.lightbend.lagom" % "lagom-sbt-plugin" % "1.6.4"
 
 
 lazy val sbtKanelaRunner = Project("sbt-kanela-runner", file("."))
-  .settings(noPublishing: _*)
+  .settings(
+    noPublishing: _*
+  )
   .aggregate(kanelaRunner, kanelaRunnerPlay26, kanelaRunnerPlay27, kanelaRunnerPlay28, kanelaRunnerLagom16)
 
 lazy val kanelaRunner = Project("kanela-runner", file("sbt-kanela-runner"))
