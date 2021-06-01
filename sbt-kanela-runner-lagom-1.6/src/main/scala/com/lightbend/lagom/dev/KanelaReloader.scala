@@ -36,7 +36,6 @@ object KanelaReloader {
     * Execute f with context ClassLoader of Reloader
     */
   private def withReloaderContextClassLoader[T](f: => T): T = {
-    
     val thread    = Thread.currentThread
     val oldLoader = thread.getContextClassLoader
     // we use accessControlContext & AccessController to avoid a ClassLoader leak (ProtectionDomain class)
