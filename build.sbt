@@ -21,14 +21,6 @@ inThisBuild(List(
   sbtPlugin := true,
   organization := "io.kamon",
   licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
-  developers := List(
-    Developer(
-      "ivantopo",
-      "Ivan Topolnjak",
-      "ivantopo@kamon.io",
-      url("https://github/ivantopo")
-    )
-  )
 ))
 
 def crossSbtDependency(module: ModuleID, sbtVersion: String, scalaVersion: String): ModuleID = {
