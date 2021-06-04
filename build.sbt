@@ -20,7 +20,6 @@ import sbt.Keys._
 inThisBuild(List(
   sbtPlugin := true,
   organization := "io.kamon",
-  homepage := Some(url("https://kamon.io")),
   licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
   developers := List(
     Developer(
