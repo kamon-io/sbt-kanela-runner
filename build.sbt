@@ -22,7 +22,6 @@ inThisBuild(List(
   organization := "io.kamon",
   homepage := Some(url("https://kamon.io")),
   licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
-  publishMavenStyle := true,
   developers := List(
     Developer(
       "ivantopo",
@@ -52,6 +51,7 @@ lazy val sbtKanelaRunner = Project("sbt-kanela-runner", file("."))
 lazy val kanelaRunner = Project("kanela-runner", file("sbt-kanela-runner"))
   .settings(
     sbtPlugin := true,
+    publishMavenStyle := true,
     moduleName := "sbt-kanela-runner",
     bintrayPackage := "sbt-kanela-runner",
     libraryDependencies += "net.bytebuddy" % "byte-buddy-agent" % "1.9.12"
@@ -61,6 +61,7 @@ lazy val kanelaRunnerPlay26 = Project("kanela-runner-play-26", file("sbt-kanela-
   .dependsOn(kanelaRunner)
   .settings(
     sbtPlugin := true,
+    publishMavenStyle := true,
     name := "sbt-kanela-runner-play-2.6",
     moduleName := "sbt-kanela-runner-play-2.6",
     bintrayPackage := "sbt-kanela-runner-play-2.6",
@@ -73,6 +74,7 @@ lazy val kanelaRunnerPlay27 = Project("kanela-runner-play-27", file("sbt-kanela-
   .dependsOn(kanelaRunner)
   .settings(
     sbtPlugin := true,
+    publishMavenStyle := true,
     name := "sbt-kanela-runner-play-2.7",
     moduleName := "sbt-kanela-runner-play-2.7",
     bintrayPackage := "sbt-kanela-runner-play-2.7",
@@ -85,6 +87,7 @@ lazy val kanelaRunnerPlay28 = Project("kanela-runner-play-28", file("sbt-kanela-
   .dependsOn(kanelaRunner)
   .settings(
     sbtPlugin := true,
+    publishMavenStyle := true,
     name := "sbt-kanela-runner-play-2.8",
     moduleName := "sbt-kanela-runner-play-2.8",
     bintrayPackage := "sbt-kanela-runner-play-2.8",
@@ -97,6 +100,7 @@ lazy val kanelaRunnerLagom16 = Project("kanela-runner-lagom-16", file("sbt-kanel
   .dependsOn(kanelaRunner)
   .settings(
     sbtPlugin := true,
+    publishMavenStyle := true,
     name := "sbt-kanela-runner-lagom-1.6",
     moduleName := "sbt-kanela-runner-lagom-1.6",
     bintrayPackage := "sbt-kanela-runner-lagom-1.6",
