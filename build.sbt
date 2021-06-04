@@ -20,7 +20,6 @@ import sbt.Keys._
 inThisBuild(List(
   sbtPlugin := true,
   organization := "io.kamon",
-  licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
 ))
 
 def crossSbtDependency(module: ModuleID, sbtVersion: String, scalaVersion: String): ModuleID = {
