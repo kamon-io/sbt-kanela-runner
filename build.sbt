@@ -37,6 +37,7 @@ lazy val sbtKanelaRunner = Project("sbt-kanela-runner", file("."))
   .settings(
     noPublishing: _*
   )
+  .disablePlugins(GitVersioning)
   .aggregate(kanelaRunner, kanelaRunnerPlay26, kanelaRunnerPlay27, kanelaRunnerPlay28, kanelaRunnerLagom16)
 
 lazy val kanelaRunner = Project("kanela-runner", file("sbt-kanela-runner"))
@@ -59,7 +60,7 @@ lazy val kanelaRunnerPlay26 = Project("kanela-runner-play-26", file("sbt-kanela-
     libraryDependencies ++= Seq(
       crossSbtDependency(playSbtPluginFor26, (sbtBinaryVersion in pluginCrossBuild).value, scalaBinaryVersion.value)
     )
-  )
+  ).disablePlugins(GitVersioning)
 
 lazy val kanelaRunnerPlay27 = Project("kanela-runner-play-27", file("sbt-kanela-runner-play-2.7"))
   .dependsOn(kanelaRunner)
@@ -72,7 +73,7 @@ lazy val kanelaRunnerPlay27 = Project("kanela-runner-play-27", file("sbt-kanela-
     libraryDependencies ++= Seq(
       crossSbtDependency(playSbtPluginFor27, (sbtBinaryVersion in pluginCrossBuild).value, scalaBinaryVersion.value)
     )
-  )
+  ).disablePlugins(GitVersioning)
 
 lazy val kanelaRunnerPlay28 = Project("kanela-runner-play-28", file("sbt-kanela-runner-play-2.8"))
   .dependsOn(kanelaRunner)
@@ -85,7 +86,7 @@ lazy val kanelaRunnerPlay28 = Project("kanela-runner-play-28", file("sbt-kanela-
     libraryDependencies ++= Seq(
       crossSbtDependency(playSbtPluginFor28, (sbtBinaryVersion in pluginCrossBuild).value, scalaBinaryVersion.value)
     )
-  )
+  ).disablePlugins(GitVersioning)
 
 lazy val kanelaRunnerLagom16 = Project("kanela-runner-lagom-16", file("sbt-kanela-runner-lagom-1.6"))
   .dependsOn(kanelaRunner)
@@ -98,6 +99,6 @@ lazy val kanelaRunnerLagom16 = Project("kanela-runner-lagom-16", file("sbt-kanel
     libraryDependencies ++= Seq(
       crossSbtDependency(lagomSbtPluginFor16, (sbtBinaryVersion in pluginCrossBuild).value, scalaBinaryVersion.value)
     )
-  )
+  ).disablePlugins(GitVersioning)
 
 crossSbtVersions := Seq("1.3.8")
