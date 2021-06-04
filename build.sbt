@@ -46,7 +46,7 @@ lazy val kanelaRunner = Project("kanela-runner", file("sbt-kanela-runner"))
     moduleName := "sbt-kanela-runner",
     bintrayPackage := "sbt-kanela-runner",
     libraryDependencies += "net.bytebuddy" % "byte-buddy-agent" % "1.9.12"
-  )
+  ).disablePlugins(GitVersioning)
 
 lazy val kanelaRunnerPlay26 = Project("kanela-runner-play-26", file("sbt-kanela-runner-play-2.6"))
   .dependsOn(kanelaRunner)
