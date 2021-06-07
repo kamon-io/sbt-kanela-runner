@@ -28,7 +28,7 @@ def crossSbtDependency(module: ModuleID, sbtVersion: String, scalaVersion: Strin
 
 val playSbtPluginFor26 = "com.typesafe.play" % "sbt-plugin" % "2.6.25"
 val playSbtPluginFor27 = "com.typesafe.play" % "sbt-plugin" % "2.7.9"
-val playSbtPluginFor28 = "com.typesafe.play" % "sbt-plugin" % "2.8.7"
+val playSbtPluginFor28 = "com.typesafe.play" % "sbt-plugin" % "2.8.8"
 val lagomSbtPluginFor16 = "com.lightbend.lagom" % "lagom-sbt-plugin" % "1.6.4"
 
 

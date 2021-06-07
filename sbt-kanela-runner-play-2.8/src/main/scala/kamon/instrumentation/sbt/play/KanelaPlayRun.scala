@@ -39,7 +39,9 @@ object KanelaPlayRun extends PlayRunCompat {
     val reloadCompile = () => PlayReload.compile(
       () => Project.runTask(playReload in scope, state).map(_._2).get,
       () => Project.runTask(reloaderClasspath in scope, state).map(_._2).get,
-      () => Project.runTask(streamsManager in scope, state).map(_._2).get.toEither.right.toOption
+      () => Project.runTask(streamsManager in scope, state).map(_._2).get.toEither.right.toOption,
+      state, 
+      scope
     )
 
     lazy val devModeServer = KanelaReloader.startDevMode(
