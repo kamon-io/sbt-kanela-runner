@@ -44,8 +44,11 @@ object SbtKanelaRunner extends AutoPlugin {
     kanelaVersion := DefaultKanelaVersion,
     kanelaAgentJar := findKanelaAgentJar.value,
     kanelaRunnerJvmForkOptions := jvmForkOptions.value,
-    libraryDependencies += kanelaAgentDependency.value,
-    runner in run in Compile := kanelaRunnerTask.value
+    libraryDependencies += kanelaAgentDependency.value
+  ) ++ inConfig(Compile)(
+    inTask(run)(
+      runner := kanelaRunnerTask.value
+    )
   )
 
   def kanelaAgentDependency = Def.setting {
@@ -64,7 +67,7 @@ object SbtKanelaRunner extends AutoPlugin {
   }
 
   def kanelaRunnerTask: Def.Initialize[Task[ScalaRun]] = Def.taskDyn {
-    if ((fork in run).value) {
+    if (fork.value) {
       Def.task {
         val environmentVariables = envVars.value
         val runnerForkOptions = ForkOptions(
@@ -72,7 +75,7 @@ object SbtKanelaRunner extends AutoPlugin {
           outputStrategy = outputStrategy.value,
           bootJars = Vector.empty[java.io.File],
           workingDirectory = Some(baseDirectory.value),
-          runJVMOptions = ((javaOptions in run).value ++ kanelaRunnerJvmForkOptions.value).toVector,
+          runJVMOptions = (javaOptions.value ++ kanelaRunnerJvmForkOptions.value).toVector,
           connectInput = connectInput.value,
           envVars = environmentVariables
         )
@@ -87,7 +90,7 @@ object SbtKanelaRunner extends AutoPlugin {
 
       } else {
         val kanelaJar = kanelaAgentJar.value
-        val previousRun = (runner in run in Compile).value
+        val previousRun = runner.value
         val trap = trapExit.value
 
         Def.task {
