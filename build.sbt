@@ -37,6 +37,7 @@ lazy val sbtKanelaRunner = Project("sbt-kanela-runner", file("."))
     noPublishing: _*
   ).settings(
   publishMavenStyle := true,
+  sbtPlugin := true,
 ).aggregate(kanelaRunner, kanelaRunnerPlay26, kanelaRunnerPlay27, kanelaRunnerPlay28, kanelaRunnerLagom16)
 
 lazy val kanelaRunner = Project("kanela-runner", file("sbt-kanela-runner"))
