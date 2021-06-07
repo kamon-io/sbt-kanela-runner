@@ -89,4 +89,4 @@ lazy val kanelaRunnerLagom16 = Project("kanela-runner-lagom-16", file("sbt-kanel
   )
 
 // remove this?
-crossSbtVersions := Seq("1.3.8")
+//crossSbtVersions := Seq("1.3.8")
