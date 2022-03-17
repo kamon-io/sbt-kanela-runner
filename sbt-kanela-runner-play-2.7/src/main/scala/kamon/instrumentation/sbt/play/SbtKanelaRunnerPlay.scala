@@ -56,8 +56,8 @@ object SbtKanelaRunnerPlay extends AutoPlugin {
     * classes just bubble up to the common ClassLoader where the data is stored (in particlar, the Engine class which
     * has references to all databases).
     */
-  class SbtKanelaClassLoader(name: String, urls: Array[URL], parent: ClassLoader, loadH2Driver: Boolean = false)
-      extends KanelaOnSystemClassLoader(urls, parent) {
+  class SbtKanelaClassLoader(name: String, urls: Array[URL], parent: ClassLoader, loadH2Driver: Boolean = false,
+      skipWhenLoadingResources: Boolean = false) extends KanelaOnSystemClassLoader(urls, parent) {
 
     override def toString =
       name + "{" + getURLs.map(_.toString).mkString(", ") + "}"
@@ -74,6 +74,13 @@ object SbtKanelaRunnerPlay extends AutoPlugin {
         loadedClass
 
       } else super.loadClass(name, resolve)
+    }
+
+    override def getResources(name: String): java.util.Enumeration[java.net.URL] = {
+      if(skipWhenLoadingResources)
+        getParent.getResources(name)
+      else
+        super.getResources(name)
     }
   }
 }

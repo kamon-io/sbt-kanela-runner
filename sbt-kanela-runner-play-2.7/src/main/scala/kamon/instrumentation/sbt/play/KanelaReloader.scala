@@ -496,7 +496,7 @@ class KanelaReloader(
                 val version = classLoaderVersion.incrementAndGet
                 val name = "ReloadableClassLoader(v" + version + ")"
                 val urls = KanelaReloader.urls(classpath)
-                val loader = new SbtKanelaClassLoader(name, urls, baseLoader)
+                val loader = new SbtKanelaClassLoader(name, urls, baseLoader, skipWhenLoadingResources = true)
                 SbtKanelaRunner.attachWithInstrumentationClassLoader(kanelaAgentJar, loader, clearRegistry = false)
                 currentApplicationClassLoader = Some(loader)
                 loader
