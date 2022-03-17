@@ -22,7 +22,7 @@ doing so can be challenging when running from SBT. These plugins take care of th
 Add the `sbt-kanela-runner` plugin to your `project/plugins.sbt` file using the code bellow:
 
 ```scala
-addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.0.12")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.0.13")
 ```
 
 ### Important
@@ -47,16 +47,16 @@ For Play Framework 2.6 and 2.7 projects add the `sbt-kanela-runner-play-2.x` to 
 
 ```scala
 // For Play Framework 2.6
-addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.6" % "2.0.12")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.6" % "2.0.13")
 
 // For Play Framework 2.7
-addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.7" % "2.0.12")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.7" % "2.0.13")
 
 // For Play Framework <=2.8.7
 addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.8" % "2.0.10")
 
 // For Play Framework 2.8.8
-addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.8" % "2.0.12")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.8" % "2.0.13")
 ```
 
 Then, you will need to enable the `JavaAgent` plugin on your Play project. Find your play project on your `build.sbt`
@@ -80,7 +80,7 @@ For Lagom Framework 1.6 add the `sbt-kanela-runner-lagom-1.6` plugin to your `pr
 
 ```scala
 resolvers += Resolver.bintrayIvyRepo("kamon-io", "sbt-plugins")
-addSbtPlugin("io.kamon" % "sbt-kanela-runner-lagom-1.6" % "2.0.12")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-lagom-1.6" % "2.0.13")
 ```
 
 Then you will need to explicitly enable the `JavaAgent` and `SbtKanelaRunnerLagom` plugins in one (and only one) of your 
