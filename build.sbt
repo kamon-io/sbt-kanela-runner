@@ -17,9 +17,15 @@
 import sbt.Keys._
 import sbt._
 
+import java.net.URL
+
 inThisBuild(List(
   sbtPlugin := true,
   organization := "io.kamon",
+  scmInfo := Some(ScmInfo(
+    new URL("https://github.com/kamon-io/sbt-kanela-runner"),
+    "scm:git:https://github.com/kamon-io/sbt-kanela-runner.git"
+  ))
 ))
 
 def crossSbtDependency(module: ModuleID, sbtVersion: String, scalaVersion: String): ModuleID = {

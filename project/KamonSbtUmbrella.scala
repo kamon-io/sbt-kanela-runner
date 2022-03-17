@@ -98,10 +98,6 @@ object KamonSbtUmbrella extends AutoPlugin {
 
   private def defaultPomExtra(projectName: String) = {
     <url>http://kamon.io</url>
-      <scm>
-        <url>git://github.com/kamon-io/{projectName}.git</url>
-        <connection>scm:git:git@github.com:kamon-io/{projectName}.git</connection>
-      </scm>
       <developers>
         <developer><id>ivantopo</id><name>Ivan Topolnjak</name><url>https://twitter.com/ivantopo</url></developer>
         <developer><id>dpsoft</id><name>Diego Parra</name><url>https://twitter.com/diegolparra</url></developer>
