@@ -19,7 +19,7 @@ object KamonSbtUmbrella extends AutoPlugin {
     def optionalScope(deps: ModuleID*): Seq[ModuleID] = deps map (_ % "compile,optional")
 
     val noPublishing = Seq(
-      skip in publish := true,
+      publish / skip := true,
       publishLocal := {},
       publishArtifact := false
     )
