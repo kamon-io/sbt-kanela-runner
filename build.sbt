@@ -32,62 +32,36 @@ def crossSbtDependency(module: ModuleID, sbtVersion: String, scalaVersion: Strin
   Defaults.sbtPluginExtra(module, sbtVersion, scalaVersion)
 }
 
-val playSbtPluginFor26 = "com.typesafe.play" % "sbt-plugin" % "2.6.25"
-val playSbtPluginFor27 = "com.typesafe.play" % "sbt-plugin" % "2.7.9"
-val playSbtPluginFor28 = "com.typesafe.play" % "sbt-plugin" % "2.8.8"
-val lagomSbtPluginFor16 = "com.lightbend.lagom" % "lagom-sbt-plugin" % "1.6.7"
-
+val playSbtPluginFor29 = "com.typesafe.play" % "sbt-plugin" % "2.9.1"
+val playSbtPluginFor30 = "org.playframework" % "sbt-plugin" % "3.0.1"
+val sbtJavaAgentPlugin = "com.github.sbt" % "sbt-javaagent" % "0.1.8"
 
 lazy val sbtKanelaRunner = Project("sbt-kanela-runner", file("."))
   .settings(
     noPublishing: _*
-  ).aggregate(kanelaRunner, kanelaRunnerPlay26, kanelaRunnerPlay27, kanelaRunnerPlay28, kanelaRunnerLagom16)
+  ).aggregate(kanelaRunner, kanelaRunnerPlay29, kanelaRunnerPlay30)
 
 lazy val kanelaRunner = Project("kanela-runner", file("sbt-kanela-runner"))
   .settings(
     moduleName := "sbt-kanela-runner",
-    libraryDependencies += "net.bytebuddy" % "byte-buddy-agent" % "1.9.12"
+    libraryDependencies += "net.bytebuddy" % "byte-buddy-agent" % "1.14.2"
   )
 
-lazy val kanelaRunnerPlay26 = Project("kanela-runner-play-26", file("sbt-kanela-runner-play-2.6"))
+
+lazy val kanelaRunnerPlay29 = Project("kanela-runner-play-29", file("sbt-kanela-runner-play-2.9"))
   .dependsOn(kanelaRunner)
   .settings(
-    name := "sbt-kanela-runner-play-2.6",
-    moduleName := "sbt-kanela-runner-play-2.6",
-    libraryDependencies ++= Seq(
-      crossSbtDependency(playSbtPluginFor26, (sbtBinaryVersion in pluginCrossBuild).value, scalaBinaryVersion.value)
-    )
+    name := "sbt-kanela-runner-play-2.9",
+    moduleName := "sbt-kanela-runner-play-2.9",
+    libraryDependencies += crossSbtDependency(playSbtPluginFor29, (pluginCrossBuild / sbtBinaryVersion).value, scalaBinaryVersion.value),
+    libraryDependencies += crossSbtDependency(sbtJavaAgentPlugin, (pluginCrossBuild / sbtBinaryVersion).value, scalaBinaryVersion.value)
   )
 
-lazy val kanelaRunnerPlay27 = Project("kanela-runner-play-27", file("sbt-kanela-runner-play-2.7"))
+lazy val kanelaRunnerPlay30 = Project("kanela-runner-play-30", file("sbt-kanela-runner-play-3.0"))
   .dependsOn(kanelaRunner)
   .settings(
-    name := "sbt-kanela-runner-play-2.7",
-    moduleName := "sbt-kanela-runner-play-2.7",
-    libraryDependencies ++= Seq(
-      crossSbtDependency(playSbtPluginFor27, (sbtBinaryVersion in pluginCrossBuild).value, scalaBinaryVersion.value)
-    )
+    name := "sbt-kanela-runner-play-3.0",
+    moduleName := "sbt-kanela-runner-play-3.0",
+    libraryDependencies += crossSbtDependency(playSbtPluginFor30, (pluginCrossBuild / sbtBinaryVersion).value, scalaBinaryVersion.value),
+    libraryDependencies += crossSbtDependency(sbtJavaAgentPlugin, (pluginCrossBuild / sbtBinaryVersion).value, scalaBinaryVersion.value)
   )
-
-lazy val kanelaRunnerPlay28 = Project("kanela-runner-play-28", file("sbt-kanela-runner-play-2.8"))
-  .dependsOn(kanelaRunner)
-  .settings(
-    name := "sbt-kanela-runner-play-2.8",
-    moduleName := "sbt-kanela-runner-play-2.8",
-    libraryDependencies ++= Seq(
-      crossSbtDependency(playSbtPluginFor28, (sbtBinaryVersion in pluginCrossBuild).value, scalaBinaryVersion.value)
-    )
-  )
-
-lazy val kanelaRunnerLagom16 = Project("kanela-runner-lagom-16", file("sbt-kanela-runner-lagom-1.6"))
-  .dependsOn(kanelaRunner)
-  .settings(
-    name := "sbt-kanela-runner-lagom-1.6",
-    moduleName := "sbt-kanela-runner-lagom-1.6",
-    libraryDependencies ++= Seq(
-      crossSbtDependency(lagomSbtPluginFor16, (sbtBinaryVersion in pluginCrossBuild).value, scalaBinaryVersion.value)
-    )
-  )
-
-// remove this?
-//crossSbtVersions := Seq("1.3.8")

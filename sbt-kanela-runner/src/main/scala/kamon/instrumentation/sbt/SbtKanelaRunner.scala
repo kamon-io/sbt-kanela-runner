@@ -25,7 +25,7 @@ import net.bytebuddy.agent.ByteBuddyAgent
 object SbtKanelaRunner extends AutoPlugin {
 
   val KanelaRunner = config("kanela-runner")
-  val DefaultKanelaVersion = "1.0.11"
+  val DefaultKanelaVersion = "1.0.18"
   val InstrumentationClassLoaderProp = "kanela.instrumentation.classLoader"
 
   object Keys {
@@ -45,49 +45,37 @@ object SbtKanelaRunner extends AutoPlugin {
     kanelaAgentJar := findKanelaAgentJar.value,
     kanelaRunnerJvmForkOptions := jvmForkOptions.value,
     libraryDependencies += kanelaAgentDependency.value,
-    runner in run in Compile := kanelaRunnerTask.value
+    Compile / run / runner := kanelaRunnerTask.value
   )
 
-  def kanelaAgentDependency = Def.setting {
+  private def kanelaAgentDependency = Def.setting {
     "io.kamon" % "kanela-agent" % kanelaVersion.value % KanelaRunner.name
   }
 
-  def findKanelaAgentJar = Def.task {
+  private def findKanelaAgentJar = Def.task {
     update.value.matching(
       moduleFilter(organization = "io.kamon", name = "kanela-agent") &&
       artifactFilter(`type` = "jar")
     ).head
   }
 
-  def jvmForkOptions = Def.task {
+  private def jvmForkOptions = Def.task {
     Seq(s"-javaagent:${kanelaAgentJar.value.getAbsolutePath}")
   }
 
-  def kanelaRunnerTask: Def.Initialize[Task[ScalaRun]] = Def.taskDyn {
-    if ((fork in run).value) {
+  private def kanelaRunnerTask: Def.Initialize[Task[ScalaRun]] = Def.taskDyn {
+    if ((run / fork).value) {
       Def.task {
-        val environmentVariables = envVars.value
-        val runnerForkOptions = ForkOptions(
-          javaHome = javaHome.value,
-          outputStrategy = outputStrategy.value,
-          bootJars = Vector.empty[java.io.File],
-          workingDirectory = Some(baseDirectory.value),
-          runJVMOptions = ((javaOptions in run).value ++ kanelaRunnerJvmForkOptions.value).toVector,
-          connectInput = connectInput.value,
-          envVars = environmentVariables
-        )
-
-        new ForkRun(runnerForkOptions)
-      }
-    } else {
-      if(sbtVersion.value.startsWith("1.2")) {
-        Def.task {
-          new RunAndAttachKanela(kanelaAgentJar.value, scalaInstance.value, trapExit.value, taskTemporaryDirectory.value)
+        val currentForkOptions = forkOptions.value
+        val runForkOptions = currentForkOptions.withRunJVMOptions {
+          ((run / javaOptions).value ++ currentForkOptions.runJVMOptions).toVector
         }
 
-      } else {
+        new ForkRun(runForkOptions)
+      }
+    } else {
         val kanelaJar = kanelaAgentJar.value
-        val previousRun = (runner in run in Compile).value
+        val previousRun = (Compile / run / runner).value
         val trap = trapExit.value
 
         Def.task {
@@ -108,7 +96,6 @@ object SbtKanelaRunner extends AutoPlugin {
             }
           }
         }
-      }
     }
   }
 
@@ -133,7 +120,7 @@ object SbtKanelaRunner extends AutoPlugin {
     }
   }
 
-  def withInstrumentationClassLoader[T](classLoader: ClassLoader)(thunk: => T): T = {
+  private def withInstrumentationClassLoader[T](classLoader: ClassLoader)(thunk: => T): T = {
     try {
       System.getProperties.put(InstrumentationClassLoaderProp, classLoader)
       thunk

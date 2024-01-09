@@ -1,18 +1,19 @@
 sbt-kanela-runner
 =========
 
-This project contains [sbt] plugins that automatically configure your build to perform enable the Kanela
-instrumentation agent when running your application from within SBT, both for regular applications and Play Framework
-projects in development mode.
+This project contains [sbt] plugins that automatically configures your build to enable the Kanela instrumentation agent 
+when running your application from within SBT. It works with regular applications with a `main` method, Play Framework, 
+and Lagom projects in development mode.
 
-SBT versions 1.2.x and 1.3.x are supported. The last version supporting SBT 0.13 was 2.0.5. 
+Starting on version 2.1.x this plugin requires SBT 1.9.0+. See details below for compatibility with older SBT and 
+Play/Lagom versions.
+
 
 ## Why this plugin?
 
 First and foremost, simplicity. Although adding the Kanela agent is just about adding the `-javaagent` option to the JVM,
 doing so can be challenging when running from SBT. These plugins take care of the corner cases and ensure that hitting
 `run` will just work, regardless your project type or whether you are forking the JVM or not.
-
 
 
 ## Regular Projects (non-Play)
@@ -22,11 +23,11 @@ doing so can be challenging when running from SBT. These plugins take care of th
 Add the `sbt-kanela-runner` plugin to your `project/plugins.sbt` file using the code bellow:
 
 ```scala
-addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.0.14")
+addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.1.0")
 ```
 
-### Important
-This plugin will only work properly on SBT 1.3 if the `classLoaderLayeringStrategy` setting is set to `Flat` or you set
+#### Important
+This plugin will only work properly on SBT 1.3+ if the `classLoaderLayeringStrategy` setting is set to `Flat` or you set
 `fork in run := true`. 
 
 ### Running
@@ -35,15 +36,25 @@ Just `run`, like you do all the time!
 
 Here is what the plugin will do depending on your `fork` settings:
 * **fork in run := true**: The forked process will run with the `-javaagent:<jarpath>` and that's all.
-* **fork in run := false**: The plugin will try to attach the Kanela agent to the current process, targetting the
+* **fork in run := false**: The plugin will try to attach the Kanela agent to the current process, targeting the
 ClassLoader where your application is placed.
 
 
 ## Play Projects
 
-### Configuring
+### Installing the Plugin 
 
-For Play Framework 2.6 and 2.7 projects add the `sbt-kanela-runner-play-2.x` to your `project/plugins.sbt` file:
+For Play Framework 2.9 and 3.0, add the appropriate `sbt-kanela-runner-play-x.x` to your `project/plugins.sbt` file:
+
+```scala
+// For Play Framework 2.9
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-2.9" % "2.1.0")
+
+// For Play Framework 3.0
+addSbtPlugin("io.kamon" % "sbt-kanela-runner-play-3.0" % "2.1.0")
+```
+
+For older Play Framework versions:
 
 ```scala
 // For Play Framework 2.6
@@ -66,7 +77,7 @@ file and call `.enablePlugins(JavaAgent)` on it, it will probably look like this
 lazy val root = (project in file(".")).enablePlugins(PlayScala, JavaAgent)
 ```
 
-This plugin has been tested with **Play 2.8.8**, **Play 2.7.3** and **Play 2.6.23**.
+This plugin has been tested with **Play Framework 2.9.1**, **3.0.1**, **2.8.8**, **2.7.3**, and **2.6.23**.
 
 ### Running
 
@@ -74,7 +85,8 @@ Just `run`, like you do all the time! A notice will be shown saying that you are
 
 
 ## Lagom Projects
-### Configuration
+
+### Installing the Plugin
 
 For Lagom Framework 1.6 add the `sbt-kanela-runner-lagom-1.6` plugin to your `project/plugins.sbt` file:
 
