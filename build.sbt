@@ -44,7 +44,7 @@ lazy val sbtKanelaRunner = Project("sbt-kanela-runner", file("."))
 lazy val kanelaRunner = Project("kanela-runner", file("sbt-kanela-runner"))
   .settings(
     moduleName := "sbt-kanela-runner",
-    libraryDependencies += "net.bytebuddy" % "byte-buddy-agent" % "1.14.2"
+    libraryDependencies += "net.bytebuddy" % "byte-buddy-agent" % "1.14.11"
   )
 
 
