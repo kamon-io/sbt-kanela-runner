@@ -67,9 +67,9 @@ object SbtKanelaRunner extends AutoPlugin {
     if ((run / fork).value) {
       Def.task {
         val currentForkOptions = forkOptions.value
-        val runForkOptions = currentForkOptions.withRunJVMOptions {
-          ((run / javaOptions).value ++ currentForkOptions.runJVMOptions).toVector
-        }
+        val userJavaOptions = (run / javaOptions).value
+        val mergedOptions = (userJavaOptions ++ currentForkOptions.runJVMOptions).distinct
+        val runForkOptions = currentForkOptions.withRunJVMOptions(mergedOptions.toVector)
 
         new ForkRun(runForkOptions)
       }
