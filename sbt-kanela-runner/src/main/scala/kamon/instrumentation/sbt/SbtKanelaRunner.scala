@@ -67,9 +67,9 @@ object SbtKanelaRunner extends AutoPlugin {
     if ((run / fork).value) {
       Def.task {
         val currentForkOptions = forkOptions.value
-        val runForkOptions = currentForkOptions.withRunJVMOptions {
-          ((run / javaOptions).value ++ currentForkOptions.runJVMOptions).toVector
-        }
+        val userJavaOptions = (run / javaOptions).value
+        val mergedOptions = mergeJvmOptions(currentForkOptions.runJVMOptions, userJavaOptions)
+        val runForkOptions = currentForkOptions.withRunJVMOptions(mergedOptions.toVector)
 
         new ForkRun(runForkOptions)
       }
@@ -97,6 +97,20 @@ object SbtKanelaRunner extends AutoPlugin {
           }
         }
     }
+  }
+
+  private def mergeJvmOptions(currentForkOptions: Seq[String], userJavaOptions: Seq[String]): Seq[String] = {
+    def agentLibName(opt: String): Option[String] =
+      if (opt.startsWith("-agentlib:")) Some(opt.stripPrefix("-agentlib:").split("=")(0))
+      else None
+
+    val overrideAgents: Map[String, String] =
+      userJavaOptions.foldLeft(Map.empty[String, String]) { (acc, opt) =>
+        agentLibName(opt).fold(acc)(name => acc + (name -> opt))
+      }
+
+    val deduplicatedBase = currentForkOptions.filterNot(opt => agentLibName(opt).exists(overrideAgents.contains))
+    deduplicatedBase ++ userJavaOptions
   }
 
   @volatile private var hasBeenAttached = false
