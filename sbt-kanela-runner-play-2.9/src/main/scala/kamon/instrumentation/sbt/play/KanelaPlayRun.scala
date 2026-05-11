@@ -10,7 +10,7 @@ import sbt.*
 import sbt.internal.io.PlaySource
 import sbt.util.LoggerContext
 import sbt.Keys.*
-import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport.*
+import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport.{stagingDirectory as universalStagingDirectory, *}
 import com.typesafe.sbt.packager.Keys.executableScriptName
 import com.typesafe.sbt.web.SbtWeb.autoImport.*
 import kamon.instrumentation.sbt.SbtKanelaRunner
@@ -336,7 +336,7 @@ object KanelaPlayRun {
   }
 
   def stop(state: State): Unit = {
-    val pidFile = Project.extract(state).get(Universal / stagingDirectory) / "RUNNING_PID"
+    val pidFile = Project.extract(state).get(Universal / universalStagingDirectory) / "RUNNING_PID"
     if (pidFile.exists) {
       val pid = IO.read(pidFile)
       s"kill -15 $pid".!
