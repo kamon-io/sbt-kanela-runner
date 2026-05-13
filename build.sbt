@@ -25,7 +25,8 @@ inThisBuild(List(
   scmInfo := Some(ScmInfo(
     new URL("https://github.com/kamon-io/sbt-kanela-runner"),
     "scm:git:https://github.com/kamon-io/sbt-kanela-runner.git"
-  ))
+  )),
+  sonatypeCredentialHost := "oss.sonatype.org"
 ))
 
 def crossSbtDependency(module: ModuleID, sbtVersion: String, scalaVersion: String): ModuleID = {
