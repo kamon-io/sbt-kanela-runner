@@ -16,6 +16,7 @@
 
 import sbt.Keys._
 import sbt._
+import xerial.sbt.Sonatype.autoImport.*
 
 import java.net.URL
 
